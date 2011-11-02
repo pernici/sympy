@@ -13,6 +13,7 @@ from sympy.polys.polyerrors import (
     ExactQuotientFailed)
 
 from sympy.utilities import cythonized
+import sympy
 
 @cythonized("i,n,m")
 def dup_add_term(f, c, i, K):
@@ -944,6 +945,71 @@ def dmp_sqr(f, u, K):
 
     return dmp_strip(h, u)
 
+def dup_min_deg(f):
+    """
+    lowest degree of ``f``
+    """
+    n = 0
+    for x in f[::-1]:
+        if x != 0:
+            break
+        n += 1
+    return n
+
+@cythonized("n,m")
+def dup_pow_miller(f, n, K):
+    """
+    Raise ``f`` to the ``n``-th power in ``K[x]``
+    using the Miller recurrence formula
+
+    P(x) = sum_{i=0}^m p_i x^k
+    P(x)^n = sum_{k=0}^{m n} a(n,k) x^k
+
+    The coefficients ``a(n,k)`` can be computed using the
+    J.C.P. Miller Pure Recurrence [see D.E.Knuth, Seminumerical
+    Algorithms, The art of Computer Programming v.2, Addison
+    Wesley, Reading, 1981;]::
+
+    a(n,k) = 1/(k p_0) sum_{i=1}^m p_i ((n+1)i-k) a(n,k-i),
+
+    where ``a(n,0) = p_0^n``.
+
+    **Examples**
+
+    >>> from sympy.polys.domains import ZZ
+    >>> from sympy.polys.densearith import dup_pow_miller
+
+    >>> dup_pow_miller([ZZ(1), -ZZ(2)], 3, ZZ)
+    [1, -6, 12, -8]
+
+    """
+    if not n:
+        return [K.one]
+    if n < 0:
+        raise ValueError("can't raise polynomial to a negative power")
+    if n == 1 or not f or f == [K.one]:
+        return f
+
+    g = [K.one]
+
+    mindeg = dup_min_deg(f)
+    if mindeg:
+        f = dup_rshift(f, mindeg, K)
+
+    degp = dup_degree(f)
+    N = n*degp + 1
+    a = [0]*N
+    a[0] = K(f[-1])**n
+    pv = f[::-1]
+    for k in range(1, N):
+        s = 0
+        for i in range(1, min(degp, k) + 1):
+            s += pv[i]*((n+1)*i - k)*a[k-i]
+            a[k] = s/(k*pv[0])
+    if mindeg:
+        a = [K.zero]*(mindeg*n) + a
+    return dup_strip(a[::-1])
+
 @cythonized("n,m")
 def dup_pow(f, n, K):
     """
@@ -966,6 +1032,8 @@ def dup_pow(f, n, K):
         return f
 
     g = [K.one]
+    if n >= 20 and K in (sympy.polys.domains.ZZ, sympy.polys.domains.QQ):
+        return dup_pow_miller(f, n, K)
 
     while True:
         n, m = n//2, n
