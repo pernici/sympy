@@ -189,7 +189,7 @@ def test_gamma5():
     epsilon = GM.epsilon
     t1 = GM.G5_to_right(2*G5)
     assert t1 == 2*G5
-    assert gamma_trace(t1) == 0
+    assert gamma_trace(t1).equals(0)
 
     t = G5*G(m0)
     t1 = GM.G5_to_right(t)
@@ -208,19 +208,19 @@ def test_gamma5():
 
     t = G5*G(m0)
     t1 = gamma_trace(t)
-    assert t1 == 0
+    assert t1.equals(0)
 
     t = G(m0)*G5*G(m1)
     t1 = gamma_trace(t)
-    assert t1 == 0
+    assert t1.equals(0)
 
     t= G5*G(m0)*G(m1)*G(m2)*G(m3)
     t1 = gamma_trace(t)
-    assert t1 == 4*I*epsilon(m0, m1, m2, m3)
+    assert t1.equals(4*I*epsilon(m0, m1, m2, m3))
 
     t= G5*G(m0)*G(-m0)*G(m1)*G(m2)*G(m3)
     t1 = gamma_trace(t)
-    assert t1 == 0
+    assert t1.equals(0)
 
     t= G5*G(m0)*G(-m0)*G(m1)*G(m2)*G(m3)*G(m4)
     t1 = gamma_trace(t)
@@ -253,17 +253,17 @@ def test_gamma5():
     pq = p(m0)*q(-m0)
     t = (ps + M)*G5*(qs + M)*G5
     t1 = gamma_trace(t)
-    assert t1 == -4*p(m0)*q(-m0) + 4*M**2
+    assert t1.equals(-4*p(m0)*q(-m0) + 4*M**2)
 
     t = G(m0)*(ps + M)*G(m2)*(ps + qs + M)*G5
     t1 = gamma_trace(t)
-    assert t1 == -4*I*epsilon(m0,m2,m1,m3)*p(-m1)*q(-m3)
+    assert t1.equals(-4*I*epsilon(m0,m2,m1,m3)*p(-m1)*q(-m3))
 
     t = G(m0)*(ps + M)*G(m1)*(ps + qs)*G(m2)*(1 - G5)
     t1 = gamma_trace(t)
-    assert t1 == 4*M*(-g(m1, m2)*p(m0) -g(m1, m2)*q(m0) + \
+    assert t1.equals(4*M*(-g(m1, m2)*p(m0) -g(m1, m2)*q(m0) + \
       I*epsilon(m0, m1, m2, m3)*p(-m3) + I*epsilon(m0, m1, m2, m3)*q(-m3) + \
-        g(m0, m1)*p(m2) + g(m0, m1)*q(m2) + g(m0, m2)*p(m1) + g(m0, m2)*q(m1))
+        g(m0, m1)*p(m2) + g(m0, m1)*q(m2) + g(m0, m2)*p(m1) + g(m0, m2)*q(m1)))
 
     t = G(m0)*G(m1)*G(m2)*G(m3)*G(m4)*G(m5)*G5
     t1 = gamma_trace(t)
@@ -292,4 +292,4 @@ def test_epsilon():
     t = G(m0)*G(m1)*G(m2)*G(m3)*G(n0)*G(n1)*G(n2)*G(n3)*epsilon(-n0,-n1,-n2,-n3)
 
     t1 = gamma_trace(t)
-    assert t1 == 96*epsilon(m0, m1, m2, m3)
+    assert t1.equals(96*epsilon(m0, m1, m2, m3))
