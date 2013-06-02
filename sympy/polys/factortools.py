@@ -266,6 +266,8 @@ def dup_zz_zassenhaus(f, K):
     gamma = int(_ceil(2*_log(C, 2)))
     bound = int(2*gamma*_log(gamma))
 
+    pmin = 2
+    min_num_factors = 1e10
     for p in xrange(3, bound + 1):
         if not isprime(p) or b % p == 0:
             continue
@@ -273,15 +275,24 @@ def dup_zz_zassenhaus(f, K):
         p = K.convert(p)
 
         F = gf_from_int_poly(f, p)
-
         if gf_sqf_p(F, p, K):
-            break
+            fsqf = gf_factor_sqf(F, p, K)[1]
+            nfsqf = len(fsqf)
+            if nfsqf < 15:
+                break
+            if nfsqf < min_num_factors:
+                pmin = p
+                min_num_factors = nfsqf
+    else:
+        p = pmin
+        F = gf_from_int_poly(f, p)
+        fsqf = gf_factor_sqf(F, p, K)[1]
 
     l = int(_ceil(_log(2*B + 1, p)))
 
     modular = []
 
-    for ff in gf_factor_sqf(F, p, K)[1]:
+    for ff in fsqf:
         modular.append(gf_to_int_poly(ff, p))
 
     g = dup_zz_hensel_lift(p, f, modular, l, K)
