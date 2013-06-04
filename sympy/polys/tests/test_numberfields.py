@@ -233,14 +233,16 @@ def test_minpoly_compose():
     raises(NotAlgebraic, lambda: minimal_polynomial(sin(pi*sqrt(2)), x))
     raises(NotAlgebraic, lambda: minimal_polynomial(exp(I*pi*sqrt(2)), x))
 
-    # issue 2835
-    ex = 1/(-36000 - 7200*sqrt(5) + (12*sqrt(10)*sqrt(sqrt(5) + 5) +
-        24*sqrt(10)*sqrt(-sqrt(5) + 5))**2) + 1
-    raises(ZeroDivisionError, lambda: minimal_polynomial(ex, x))
 
     ex = sqrt(1 + 2**Rational(1,3)) + sqrt(1 + 2**Rational(1,4)) + sqrt(2)
     mp = minimal_polynomial(ex, x)
     assert degree(mp) == 48 and mp.subs({x:0}) == -16630256576
+
+def notest_minpoly_compose1():
+    # issue 2835
+    ex = 1/(-36000 - 7200*sqrt(5) + (12*sqrt(10)*sqrt(sqrt(5) + 5) +
+        24*sqrt(10)*sqrt(-sqrt(5) + 5))**2) + 1
+    raises(ZeroDivisionError, lambda: minimal_polynomial(ex, x))
 
 
 def test_primitive_element():

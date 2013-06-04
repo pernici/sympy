@@ -26,9 +26,13 @@ from sympy.polys.specialpolys import cyclotomic_poly
 
 from sympy.polys.polyutils import dict_from_expr, expr_from_dict
 
-from sympy.polys.domains import ZZ
+from sympy.polys.domains import ZZ, QQ
 
 from sympy.polys.orthopolys import dup_chebyshevt
+
+from sympy.polys.ring_series import compose_add
+
+from sympy.polys.rings import ring
 
 from sympy.printing.lambdarepr import LambdaPrinter
 
@@ -231,14 +235,22 @@ def _minpoly_op_algebraic_number(ex1, ex2, x, mp1=None, mp2=None, op=Add):
 
     if op is Add:
         # mp1a = mp1.subs({x:x - y})
-        (p1, p2), _ = parallel_poly_from_expr((mp1, x - y), x, y)
-        r = p1.compose(p2)
-        mp1a = r.as_expr()
+        r, X = ring('X', QQ)
+        p1 = r(dict_from_expr(mp1)[0])
+        p2 = r(dict_from_expr(mp2)[0])
+
+        #(p1, p2), _ = parallel_poly_from_expr((mp1, x - y), x, y)
+        #r = p1.compose(p2)
+        #mp1a = r.as_expr()
     elif op is Mul:
         mp1a = _muly(mp1, x, y)
     else:
         raise NotImplementedError('option not available')
-    r = resultant(mp1a, mp2, gens=[y, x])
+    if op is Mul:
+        r = resultant(mp1a, mp2, gens=[y, x])
+    elif op is Add:
+        r = compose_add(p1, p2)
+        r = expr_from_dict(r.as_expr_dict(), x)
 
     deg1 = degree(mp1, x)
     deg2 = degree(mp2, y)

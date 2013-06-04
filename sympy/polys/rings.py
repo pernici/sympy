@@ -169,6 +169,29 @@ class PolyRing(DefaultPrinting, IPolys):
         else:
             return self.ring_new(poly)
 
+    def index(self, gen):
+        """Compute index of ``gen`` in ``self.gens``. """
+        if gen is None:
+            i = 0
+        elif isinstance(gen, int):
+            i = gen
+
+            if 0 <= i and i < self.ngens:
+                pass
+            elif -self.ngens <= i and i <= -1:
+                i = -i - 1
+            else:
+                raise ValueError("invalid generator index")
+        elif isinstance(gen, self.dtype):
+            if gen not in self._gens_set:
+                raise ValueError("invalid generator")
+            else:
+                i = list(self.gens).index(gen)
+        else:
+            raise ValueError("expected a polynomial generator, an integer or None, got %s" % gen)
+
+        return i
+
     @property
     def zero(self):
         return self.dtype(self)
@@ -1149,6 +1172,23 @@ class PolyElement(DomainElement, DefaultPrinting, CantSympify, dict):
         if expv:
             p[expv] = self[expv]
         return p
+
+    def listcoeffs(self):
+        """Unordered list of polynomial coefficients. """
+        return list(self.itervalues())
+
+    def listmonoms(self):
+        """Unordered list of polynomial monomials. """
+        return list(self.iterkeys())
+
+    def degree(f, x=None):
+        """The leading degree in ``x`` or the main variable. """
+        i = f.ring.index(x)
+
+        if not f:
+            return -1
+        else:
+            return max([ monom[i] for monom in f.iterkeys() ])
 
     def coeffs(self):
         return self.itervalues()
