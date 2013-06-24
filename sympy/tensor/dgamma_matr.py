@@ -49,11 +49,11 @@ class GammaMatrices(object):
             raise ValueError('Dimension not assigned')
         self.D = typ.dim
         self.typ = typ
-        sym1 = TensorSymmetry(get_symmetric_group_sgs(1))
+        sym1 = TensorSymmetry(*get_symmetric_group_sgs(1))
         S1 = TensorType([typ], sym1)
         self.Gsymbol = Symbol('Gsymbol')
         self.G = S1('G', self.Gsymbol)
-        sym0 = TensorSymmetry(([], [Permutation(1)]))
+        sym0 = TensorSymmetry([], [Permutation(1)])
         S0 = TensorType([], sym0)
         self.Gamma5 = S0('G5', self.Gsymbol)
         self.G5 = TensMul(S.One, [self.Gamma5], [], [])

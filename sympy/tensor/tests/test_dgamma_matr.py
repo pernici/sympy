@@ -9,7 +9,7 @@ D = Symbol('D')
 Lorentz = TensorIndexType('Lorentz', dim=D, eps_dim=4, dummy_fmt='L')
 m0, m1, m2, m3, m4, m5 = tensor_indices('m0,m1,m2,m3,m4,m5', Lorentz)
 n0, n1, n2, n3, n4, n5 = tensor_indices('n0,n1,n2,n3,n4,n5', Lorentz)
-sym1 = TensorSymmetry(get_symmetric_group_sgs(1))
+sym1 = TensorSymmetry(*get_symmetric_group_sgs(1))
 S1 = TensorType([Lorentz], sym1)
 
 GM = GammaMatrices( Lorentz)
