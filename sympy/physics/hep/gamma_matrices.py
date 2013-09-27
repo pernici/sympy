@@ -5,7 +5,7 @@ from sympy.core.containers import Tuple
 import collections
 
 
-DiracSpinor = TensorIndexType('DiracSpinor', dim=4, dummy_fmt="S")
+DiracSpinor = TensorIndexType('DiracSpinor', metric=None, dim=4, dummy_fmt="S")
 
 
 class _LorentzContainer(object):
