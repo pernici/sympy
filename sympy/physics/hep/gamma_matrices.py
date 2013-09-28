@@ -245,7 +245,6 @@ class GammaMatrixHead(TensorHead):
         Evaluate the trace of gamma matrix strings inside a ``TensExpr``.
         """
         tadd = GammaMatrix.simplify_tens(expression)
-
         Lorentz = self.Lorentz
         D = Lorentz.dim
 
@@ -260,7 +259,7 @@ class GammaMatrixHead(TensorHead):
         if not tadd.rank:
             # if rank of simplified expression is zero, return the dimension:
             assert len(tadd.args) == 1
-            return D * tadd.args[0].coeff
+            return D * tadd.args[0].coeff # FIXME 2**D instead of D
 
         # Recurrence function to transform
         def even_trace_recursion(t):
@@ -270,7 +269,6 @@ class GammaMatrixHead(TensorHead):
                 if not isinstance(j.components[0], GammaMatrixHead):
                     continue
                 lorentz_indices += [i[0] for i in j.free if i[0]._tensortype == Lorentz]
-
             if len(lorentz_indices) == 0:
                 return t
             elif len(lorentz_indices) == 2:
@@ -298,10 +296,7 @@ class GammaMatrixHead(TensorHead):
         for arg in tadd.args:
             # make the gamma matrix expression a circle with respect to its DiracSpinor indices:
             a = arg.substitute_indices((DiracSpinor.auto_right, -DiracSpinor.auto_index), (DiracSpinor.auto_left, DiracSpinor.auto_index))
-            arg = S.One
-            for i in a.split():
-                arg *= i
-            splits = arg.split()
+            splits = a.split()
             gamma_mats = [_ for _ in splits if isinstance(_.components[0], GammaMatrixHead)]
             gexpr = S.One
             while gamma_mats:
@@ -311,6 +306,7 @@ class GammaMatrixHead(TensorHead):
                     break
                 spn1, spn2 = [_[0] for _ in gm1.free if _[0]._tensortype == DiracSpinor]
                 swappos = next(_ for _ in range(len(gamma_mats)) if gamma_mats[_].has(-spn1) or gamma_mats[_].has(-spn2))
+
                 gamma_mats[0], gamma_mats[swappos] = gamma_mats[swappos], gamma_mats[0]
 
             res_add.append(even_trace_recursion(gexpr))
