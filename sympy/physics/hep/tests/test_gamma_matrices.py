@@ -298,38 +298,48 @@ def test_simple_trace_cases_symbolic_dim():
     assert t1 == t2
 
 def test_get_lines():
+    p = tensorhead('p', [G.Lorentz], [[1]])
     i0,i1,i2,i3,i4,i5,i6,i7,i8,i9,i10,i11,i12,i13 = \
        tensor_indices('i0:14', G.Lorentz)
     s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16 = \
        tensor_indices('s0:17', DiracSpinor)
     t = G(i1,s1,-s2)*G(i2,s3,-s4)*G(i4,s2,-s6)*G(i3,s4,-s3)
     r = G._get_lines(t)
-    assert r == ([[0, 2]], [[1, 3]])
+    assert r == ([[0, 2]], [[1, 3]], [])
+    t = G(i1,s1,-s2)*G(i2,s3,-s4)*G(i4,s2,-s6)*G(i3,s4,-s3)*G(i5,s7,-s8)
+    r = G._get_lines(t)
+    assert r == ([[0, 2]], [[1, 3]], [4])
+    t = G(i1,s1,-s2)*G(i2,s3,-s4)*G(i4,s2,-s6)*G(i3,s4,-s3)*G(i5,s7,-s8)*p(-i1)
+    r = G._get_lines(t)
+    assert r == ([[0, 2]], [[1, 3]], [4, 5])
+    t = G(i1,s1,-s2)*p(i6)*G(i2,s3,-s4)*G(i4,s2,-s6)*G(i3,s4,-s3)*G(i5,s7,-s8)*p(-i1)
+    r = G._get_lines(t)
+    assert r == ([[0, 3]], [[2, 4]], [1, 5, 6])
     t = G(i1,s1,-s2)*G(i2,s2,-s3)*G(i3,s3,-s4)*G(i4,s4,-s5)*\
         G(i5,s6,-s7)*G(i6,s7,-s8)*G(i7,s8,-s9)*G(i8,s9,-s6)
     r = G._get_lines(t)
-    assert r == ([[0, 1, 2, 3]], [[4, 5, 6, 7]])
+    assert r == ([[0, 1, 2, 3]], [[4, 5, 6, 7]], [])
     t = G(i1,s1,-s2)*G(i0,s0,-s10)*G(i2,s2,-s3)*G(i3,s3,-s4)*\
     G(i4,s4,-s5)*G(i5,s6,-s7)*G(i6,s7,-s8)*G(i7,s8,-s9)*\
     G(i8,s9,-s6)*G(i9,s10,-s0)
     r = G._get_lines(t)
-    assert r == ([[0, 2, 3, 4]], [[5, 6, 7, 8], [1, 9]])
+    assert r == ([[0, 2, 3, 4]], [[5, 6, 7, 8], [1, 9]], [])
     t = G(i1,s1,-s2)*G(i11,s12,-s13)*G(i0,s0,-s10)*G(i2,s2,-s3)*G(i3,s3,-s4)*\
         G(i4,s4,-s5)*G(i5,s6,-s7)*G(i10,s11,-s12)*G(i6,s7,-s8)*G(i7,s8,-s9)*\
         G(i8,s9,-s6)*G(i9,s10,-s0)
     r = G._get_lines(t)
-    assert r == ([[0, 3, 4, 5], [7, 1]], [[6, 8, 9, 10], [2, 11]])
+    assert r == ([[0, 3, 4, 5], [7, 1]], [[6, 8, 9, 10], [2, 11]], [])
     t = G(i4,s4,-s5)*G(i5,s6,-s7)*G(i10,s11,-s12)*G(i6,s7,-s8)*G(i7,s8,-s9)*\
         G(i8,s9,-s6)*G(i9,s10,-s0)*\
         G(i1,s1,-s2)*G(i11,s12,-s13)*G(i0,s0,-s10)*G(i2,s2,-s3)*G(i3,s3,-s4)
     r = G._get_lines(t)
-    assert r == ([[2, 8], [7, 10, 11, 0]], [[1, 3, 4, 5], [6, 9]])
+    assert r == ([[2, 8], [7, 10, 11, 0]], [[1, 3, 4, 5], [6, 9]], [])
     t = G(i8,s9,-s6)*G(i9,s10,-s0)*G(i4,s4,-s5)*G(i13,s14,-s15)*\
         G(i10,s11,-s12)*G(i1,s1,-s2)*G(i11,s12,-s13)*\
         G(i0,s0,-s10)*G(i6,s7,-s8)*G(i7,s8,-s9)*\
         G(i2,s2,-s3)*G(i12,s13,-s14)*G(i3,s3,-s4)*G(i5,s6,-s7)
     r = G._get_lines(t)
-    assert r == ([[4, 6, 11, 3], [5, 10, 12, 2]], [[1, 7], [0, 13, 8, 9]])
+    assert r == ([[4, 6, 11, 3], [5, 10, 12, 2]], [[1, 7], [0, 13, 8, 9]], [])
 
 def test_simplify_lines():
     i0,i1,i2,i3,i4,i5,i6,i7,i8,i9,i10,i11,i12 = tensor_indices('i0:13', G.Lorentz)

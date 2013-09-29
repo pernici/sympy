@@ -105,9 +105,10 @@ class GammaMatrixHead(TensorHead):
     @staticmethod
     def _get_lines(ex):
         """
-        returns ``(lines, traces)``
+        returns ``(lines, traces, rest)``
         where ``lines`` is the list of list of positions of a gamma line,
-        ``traces`` is the list of list of traced gamma lines
+        ``traces`` is the list of list of traced gamma lines,
+        ``rest`` is the list of the positions of the remaining tensors.
 
         Examples
         ========
@@ -120,7 +121,7 @@ class GammaMatrixHead(TensorHead):
         >>> G = GammaMatrix
         >>> t = G(i1,s1,-s2)*G(i4,s7,-s6)*G(i2,s2,-s3)*G(i3,s4,-s5)*G(i5,s6,-s7)
         >>> GammaMatrix._get_lines(t)
-        ([[0, 2]], [[1, 4]])
+        ([[0, 2]], [[1, 4]], [3])
         """
         def _join_lines(a):
             i = 0
@@ -181,7 +182,17 @@ class GammaMatrixHead(TensorHead):
             lines = [x for x in lines1 if x not in traces1]
             lines = _join_lines(lines)
 
-        return lines, traces
+
+        rest = []
+        for line in lines:
+            for y in line:
+                rest.append(y)
+        for line in traces:
+            for y in line:
+                rest.append(y)
+        rest = [x for x in range(len(tids.components)) if x not in rest]
+
+        return lines, traces, rest
 
     @staticmethod
     def simplify_lines(ex):
@@ -201,15 +212,7 @@ class GammaMatrixHead(TensorHead):
 
         """
         tids = ex._tids
-        lines, traces = GammaMatrixHead._get_lines(ex)
-        rest = []
-        for line in lines:
-            for y in line:
-                rest.append(y)
-        for line in traces:
-            for y in line:
-                rest.append(y)
-        rest = [x for x in range(len(tids.components)) if x not in rest]
+        lines, traces, rest = GammaMatrixHead._get_lines(ex)
         a = ex.split()
         trest = tensor_mul(*[x for i, x in enumerate(a) if i in rest])
         tlines = []
