@@ -227,6 +227,35 @@ def _af_commutes_with(a, b):
     """
     return not any(a[b[i]] != b[a[i]] for i in range(len(a) - 1))
 
+def _next_trotterjohnson(pi, par):
+    n = len(pi)
+    st = 0
+    rho = pi[:]
+    m = n-1
+    par1 = par
+    while m:
+        d = rho.index(m)
+        par = (par + len(rho) - 1 - d)%2
+        rho.pop(d)
+        if par == 1:
+            if d == m:
+                m -= 1
+            else:
+                st1 = st + d
+                pi[st1], pi[st1 + 1] = pi[st1 + 1], pi[st1]
+                return pi, par1 - 1
+        else:
+            if d == 0:
+                m -= 1
+                st += 1
+            else:
+                st1 = st + d
+                pi[st1], pi[st1 - 1] = pi[st1 - 1], pi[st1]
+                return pi, par1 - 1
+    if m == 0:
+        return None
+    return pi, par1
+
 
 class Cycle(dict):
     """
@@ -2396,32 +2425,11 @@ class Permutation(Basic):
         rank_trotterjohnson, unrank_trotterjohnson, sympy.utilities.iterables.generate_bell
         """
         pi = self.array_form[:]
-        n = len(pi)
-        st = 0
-        rho = pi[:]
-        done = False
-        m = n-1
-        while m > 0 and not done:
-            d = rho.index(m)
-            for i in range(d, m):
-                rho[i] = rho[i + 1]
-            par = _af_parity(rho[:m])
-            if par == 1:
-                if d == m:
-                    m -= 1
-                else:
-                    pi[st + d], pi[st + d + 1] = pi[st + d + 1], pi[st + d]
-                    done = True
-            else:
-                if d == 0:
-                    m -= 1
-                    st += 1
-                else:
-                    pi[st + d], pi[st + d - 1] = pi[st + d - 1], pi[st + d]
-                    done = True
-        if m == 0:
+        par = _af_parity(pi)
+        res = _next_trotterjohnson(pi, par)
+        if res is None:
             return None
-        return _af_new(pi)
+        return _af_new(res[0])
 
     def get_precedence_matrix(self):
         """

@@ -1541,12 +1541,16 @@ def uniq(seq, result=None):
 
 
 def generate_bell(n):
-    """Return permutations of [0, 1, ..., n - 1] such that each permutation
+    """
+    Generate permutations in Trotter-Johnson order.
+
+    If `n` is an integer, the starting permutation in `tuple(range(n))`;
+    else `n` is the starting permutation in array form.
+
+    For `n` integer,
+    return permutations of [0, 1, ..., n - 1] such that each permutation
     differs from the last by the exchange of a single pair of neighbors.
-    The ``n!`` permutations are returned as an iterator. In order to obtain
-    the next permutation from a random starting permutation, use the
-    ``next_trotterjohnson`` method of the Permutation class (which generates
-    the same sequence in a different manner).
+    The ``n!`` permutations are returned as an iterator.
 
     Examples
     ========
@@ -1585,6 +1589,11 @@ def generate_bell(n):
     [X XXXX XX XXXX XX XXXX X]
     [ XXXXXX  XXXXXX  XXXXXX ]
 
+    Example using a starting permutation:
+
+    >>> list(generate_bell((3, 0, 2, 1)))[:5]
+    [(3, 0, 2, 1), (0, 3, 2, 1), (0, 2, 3, 1), (0, 2, 1, 3), (2, 0, 1, 3)]
+
     See Also
     ========
     sympy.combinatorics.Permutation.next_trotterjohnson
@@ -1601,50 +1610,72 @@ def generate_bell(n):
       Vincent Vajnovszki, DMTCS vol 1 issue 12, 2010
 
     """
-    n = as_int(n)
-    if n < 1:
-        raise ValueError('n must be a positive integer')
-    if n == 1:
-        yield (0,)
-    elif n == 2:
-        yield (0, 1)
-        yield (1, 0)
-    elif n == 3:
-        for li in [(0, 1, 2), (0, 2, 1), (2, 0, 1), (2, 1, 0), (1, 2, 0), (1, 0, 2)]:
-            yield li
-    else:
-        m = n - 1
-        op = [0] + [-1]*m
-        l = list(range(n))
-        while True:
-            yield tuple(l)
-            # find biggest element with op
-            big = None, -1  # idx, value
-            for i in range(n):
-                if op[i] and l[i] > big[1]:
-                    big = i, l[i]
-            i, _ = big
-            # swap it with neighbor in the indicated direction
-            j = i + op[i]
-            l[i], l[j] = l[j], l[i]
-            op[i], op[j] = op[j], op[i]
-            # if it landed at the end or if the neighbor in the same
-            # direction is bigger then turn off op
-            if j == 0 or j == m or l[j + op[j]] > l[j]:
-                op[j] = 0
-            # any element bigger to the left gets +1 op
-            for i in range(j):
-                if l[i] > l[j]:
-                    op[i] = 1
-            # any element bigger to the right gets -1 op
-            for i in range(j + 1, n):
-                if l[i] > l[j]:
-                    op[i] = -1
-            # finish when there are no ops
-            if not any(i for i in op):
-                yield tuple(l)
-                break
+    if not isinstance(n, (list, tuple)):
+        try:
+            n = as_int(n)
+        except ValueError:
+            raise ValueError('n must be be a number or a list or a tuple')
+        if n < 1:
+            raise ValueError('n must be a positive integer')
+        elif n <= 8:
+            if n == 1:
+                yield (0,)
+            elif n == 2:
+                yield (0, 1)
+                yield (1, 0)
+            elif n == 3:
+                for li in [(0, 1, 2), (0, 2, 1), (2, 0, 1), (2, 1, 0), (1, 2, 0), (1, 0, 2)]:
+                    yield li
+            else:
+                m = n - 1
+                op = [0] + [-1]*m
+                l = list(range(n))
+                while True:
+                    yield tuple(l)
+                    # find biggest element with op
+                    big = None, -1  # idx, value
+                    for i in range(n):
+                        if op[i] and l[i] > big[1]:
+                            big = i, l[i]
+                    i, _ = big
+                    # swap it with neighbor in the indicated direction
+                    j = i + op[i]
+                    l[i], l[j] = l[j], l[i]
+                    op[i], op[j] = op[j], op[i]
+                    # if it landed at the end or if the neighbor in the same
+                    # direction is bigger then turn off op
+                    if j == 0 or j == m or l[j + op[j]] > l[j]:
+                        op[j] = 0
+                    # any element bigger to the left gets +1 op
+                    for i in range(j):
+                        if l[i] > l[j]:
+                            op[i] = 1
+                    # any element bigger to the right gets -1 op
+                    for i in range(j + 1, n):
+                        if l[i] > l[j]:
+                            op[i] = -1
+                    # finish when there are no ops
+                    if not any(i for i in op):
+                        yield tuple(l)
+                        break
 
+            raise StopIteration
+        else:
+            p = list(range(n))
+    else:
+        p = list(n)
+        if sorted(p) != list(range(len(p))):
+            raise ValueError('not a permutation in array form')
+    from sympy.combinatorics.permutations import _next_trotterjohnson, _af_parity
+
+    par = _af_parity(p)
+    r = p, par
+    while r:
+        p, par = r
+        yield tuple(p)
+        r = _next_trotterjohnson(p, par)
+
+    raise StopIteration
 
 def generate_involutions(n):
     """
